@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Excel Lookup</title>
+</head>
+<body>
+
+<h2>Search Data</h2>
+
+<input type="number" id="input1" placeholder="Enter value 1">
+<input type="number" id="input2" placeholder="Enter value 2">
+<button onclick="searchData()">Search</button>
+
+<h3 id="result"></h3>
+
+<script>
+let dataRows = [];
+
+fetch('data.csv')
+  .then(res => res.text())
+  .then(text => {
+    dataRows = text.split('\n').map(row => row.split(','));
+  });
+
+function searchData() {
+  let val1 = document.getElementById('input1').value;
+  let val2 = document.getElementById('input2').value;
+
+  let found = dataRows.find(row => row[0] == val1 && row[1] == val2);
+
+  if (found) {
+    document.getElementById('result').innerText = "Result: " + found[2];
+  } else {
+    document.getElementById('result').innerText = "No data found";
+  }
+}
+</script>
+
+</body>
+</html>
