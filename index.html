@@ -1,57 +1,146 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Excel Lookup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ward Lookup</title>
+
+  <style>
+    body {
+      font-family: system-ui, Arial;
+      background: #f1f3f6;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .box {
+      background: #fff;
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: center;
+      color: green;
+    }
+
+    .list {
+      margin-top: 15px;
+      font-size: 15px;
+    }
+
+    .list ul {
+      padding-left: 20px;
+    }
+
+    .list li {
+      margin-bottom: 6px;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Search Data</h2>
+<div class="box">
+  <h2>Ward Search</h2>
 
-<input type="number" id="input1" placeholder="Enter value 1">
-<input type="number" id="input2" placeholder="Enter value 2">
-<button onclick="searchData()">Search</button>
+  <input type="number" id="input1" placeholder="Booth Number" oninput="searchData()">
+  <input type="number" id="input2" placeholder="Sr No" oninput="searchData()">
 
-<h3 id="result"></h3>
-
+  <div id="result">Loading...</div>
+  <div id="details" class="list"></div>
+</div>
 
 <script>
 let dataMap = {};
+let wardMap = {};
 
+
+// 🔹 Load Booth → Ward
 fetch('website.csv')
   .then(res => res.text())
   .then(text => {
-
-    // Handle Windows + Linux line breaks
     const rows = text.trim().split(/\r?\n/);
 
-    for (let i = 1; i < rows.length; i++) { // skip header
+    for (let i = 1; i < rows.length; i++) {
       let cols = rows[i].split(',');
 
-      if (cols.length < 3) continue;
-
-      let booth = cols[0].trim();
-      let srno = cols[1].trim();
-      let ward = cols[2].trim();
-
-      let key = booth + "-" + srno;
-
-      dataMap[key] = ward;
+      let key = cols[0].trim() + "-" + cols[1].trim();
+      dataMap[key] = cols[2].trim();
     }
-
-    console.log("Loaded:", Object.keys(dataMap).length);
-    console.log("Test key 123-1:", dataMap["123-1"]); // DEBUG
   });
 
+
+// 🔹 Load Ward → Details
+fetch('booth.csv')
+  .then(res => res.text())
+  .then(text => {
+    const rows = text.trim().split(/\r?\n/);
+
+    for (let i = 1; i < rows.length; i++) {
+      let cols = rows[i].split(',');
+
+      let ward = cols[0].trim();
+      let textVal = cols.slice(1).join(',').trim(); // handles commas in text
+
+      if (!wardMap[ward]) wardMap[ward] = [];
+      wardMap[ward].push(textVal);
+    }
+
+    document.getElementById('result').innerText = "Ready";
+  });
+
+
+// 🔍 Search
 function searchData() {
   let val1 = document.getElementById('input1').value.trim();
   let val2 = document.getElementById('input2').value.trim();
 
+  let resultDiv = document.getElementById('result');
+  let detailsDiv = document.getElementById('details');
+
+  detailsDiv.innerHTML = "";
+
+  if (!val1 || !val2) return;
+
   let key = val1 + "-" + val2;
 
   if (dataMap[key]) {
-    document.getElementById('result').innerText = "Ward: " + dataMap[key];
+    let ward = dataMap[key];
+
+    resultDiv.innerText = "Ward: " + ward;
+
+    if (wardMap[ward]) {
+      let html = "<ul>";
+
+      wardMap[ward].forEach(item => {
+        html += "<li>" + item + "</li>";
+      });
+
+      html += "</ul>";
+
+      detailsDiv.innerHTML = html;
+    }
+
   } else {
-    document.getElementById('result').innerText = "No data found";
+    resultDiv.innerText = "No data found";
   }
 }
 </script>
