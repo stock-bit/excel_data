@@ -13,23 +13,39 @@
 
 <h3 id="result"></h3>
 
+
 <script>
-let dataRows = [];
+let dataMap = {};
 
 fetch('website.csv')
   .then(res => res.text())
   .then(text => {
-    dataRows = text.split('\n').map(row => row.split(','));
+
+    const rows = text.trim().split('\n');
+
+    for (let i = 1; i < rows.length; i++) { // skip header
+      let cols = rows[i].split(',');
+
+      let booth = cols[0].trim();
+      let srno = cols[1].trim();
+      let ward = cols[2].trim();
+
+      let key = booth + "-" + srno;
+
+      dataMap[key] = ward;
+    }
+
+    console.log("Loaded rows:", Object.keys(dataMap).length);
   });
 
 function searchData() {
-  let val1 = document.getElementById('input1').value;
-  let val2 = document.getElementById('input2').value;
+  let val1 = document.getElementById('input1').value.trim();
+  let val2 = document.getElementById('input2').value.trim();
 
-  let found = dataRows.find(row => row[0] == val1 && row[1] == val2);
+  let key = val1 + "-" + val2;
 
-  if (found) {
-    document.getElementById('result').innerText = "Result: " + found[2];
+  if (dataMap[key]) {
+    document.getElementById('result').innerText = "Ward: " + dataMap[key];
   } else {
     document.getElementById('result').innerText = "No data found";
   }
