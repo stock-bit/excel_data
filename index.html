@@ -21,10 +21,13 @@ fetch('website.csv')
   .then(res => res.text())
   .then(text => {
 
-    const rows = text.trim().split('\n');
+    // Handle Windows + Linux line breaks
+    const rows = text.trim().split(/\r?\n/);
 
     for (let i = 1; i < rows.length; i++) { // skip header
       let cols = rows[i].split(',');
+
+      if (cols.length < 3) continue;
 
       let booth = cols[0].trim();
       let srno = cols[1].trim();
@@ -35,7 +38,8 @@ fetch('website.csv')
       dataMap[key] = ward;
     }
 
-    console.log("Loaded rows:", Object.keys(dataMap).length);
+    console.log("Loaded:", Object.keys(dataMap).length);
+    console.log("Test key 123-1:", dataMap["123-1"]); // DEBUG
   });
 
 function searchData() {
