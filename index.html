@@ -16,7 +16,7 @@
 <script>
 let dataRows = [];
 
-fetch('data.csv')
+fetch('website.csv')
   .then(res => res.text())
   .then(text => {
     dataRows = text.split('\n').map(row => row.split(','));
